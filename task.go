@@ -33,12 +33,13 @@ func TaskWenjuan1(users *Users, c *Config) {
 			Logger.Criticalf("user:[%d],got wrong in TimeAfterStart()", v.Userid)
 		}
 
-		switch days {
-		case c.Condition1[0]:
+		switch {
+		case days == c.Condition1[0]:
 			u = append(u, v)
-		case c.Condition1[1]:
+		case days == c.Condition1[1]:
 			u = append(u, v)
-		case c.Condition1[2]:
+		//每隔60天去检查一次..
+		case days%c.Condition1[2] == 0:
 			u = append(u, v)
 		}
 	}
@@ -67,7 +68,7 @@ func TaskWenjuan2(users *Users, c *Config) {
 			Logger.Criticalf("user:[%d],got wrong in TimeAfterStart()", v.Userid)
 		}
 		//每隔多少天去检查一下，如果刚巧是30天
-		if days == c.Condition2[2] {
+		if (days-1)%c.Condition2[2] == 0 {
 			if v.Chufang.Count() > c.Condition2[1] || v.Chufang.Count() < c.Condition2[0] {
 				u = append(u, v)
 			}
@@ -75,6 +76,7 @@ func TaskWenjuan2(users *Users, c *Config) {
 	}
 	if len(u) > 0 {
 
+		fmt.Println("len u is ===== ", len(u))
 		//推送需要推送的人...写pmlist表...
 		err := PushChufang(u, c)
 		if err != nil {
@@ -107,7 +109,7 @@ func WriteQuestionnareTask(u []*Userinfo, c *Config, t int) error {
 	}
 
 	//插入任务表...
-	fmt.Printf("用户记录总数为【%d】\n ", len(u))
+	fmt.Printf("用户记录总数为【%d】,插入类型为[%d] \n ", len(u), t)
 	tablename := "wanbu_health_task_rel_user"
 	stepth := len(u) / def
 	fmt.Printf("分【%d】次插入%s表，每次%d条\n", stepth, tablename, def)
@@ -166,7 +168,7 @@ func WriteQuestionnareTask(u []*Userinfo, c *Config, t int) error {
 func PushChufang(u []*Userinfo, c *Config) error {
 
 	//插入推送表...
-	fmt.Printf("用户记录总数为【%d】\n ", len(u))
+	fmt.Printf("用户记录总数为【%d】,插入处方推送消息\n ", len(u))
 	tablename := "wanbu_pm_pmlist"
 	stepth := len(u) / def
 	fmt.Printf("分【%d】次插入%s表，每次%d条\n", stepth, tablename, def)
@@ -227,7 +229,7 @@ func PushChufang(u []*Userinfo, c *Config) error {
 func PushGuding(u []*Userinfo, c *Config) error {
 
 	//插入推送表...
-	fmt.Printf("用户记录总数为【%d】\n ", len(u))
+	fmt.Printf("用户记录总数为【%d】,插入固定推送消息\n ", len(u))
 	tablename := "wanbu_pm_pmlist"
 	stepth := len(u) / def
 	fmt.Printf("分【%d】次插入%s表，每次%d条\n", stepth, tablename, def)

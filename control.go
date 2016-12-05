@@ -11,7 +11,7 @@ import (
 )
 
 var users Users
-var version = "1.0.0PR1"
+var version = "1.0.0PR2"
 var filepath = "config.toml"
 var modulename = "jkglmsqpush"
 
@@ -36,9 +36,7 @@ func main() {
 		//启动处理更改下载时间事件..
 		go users.ModifyUsersStarttime(MsgChan)
 
-		for _, v := range users.Sl {
-			fmt.Printf("userid:[%d],finishcount:[%d]\n", v.Userid, v.Chufang.Count())
-		}
+		users.ToString()
 
 		//对接NSQ，消费上传消息
 		consumer, err := NewConsummer(c.Nsqtopic, modulename)

@@ -8,20 +8,19 @@ import (
 
 type Userinfo struct {
 	Userid    int
-	Starttime int64
+	Starttime int64 //处方下载时间
 	Chufang   *Finshday
 }
 
 //传入参数，userid
-func (u *Userinfo) New(uid int, st int64) (ui *Userinfo, err error) {
+func (u *Userinfo) New(uid int, st, st1 int64) (ui *Userinfo, err error) {
 
 	if (st-57600)%86400 != 0 {
 		return nil, fmt.Errorf("[%d],时间值错误", st)
 	}
 
-	u.Starttime = st
 	var tmp Finshday
-	if err := tmp.Build(u.Starttime); err != nil {
+	if err := tmp.Build(st1); err != nil {
 		return nil, err
 	}
 

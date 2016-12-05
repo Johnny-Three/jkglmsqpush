@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -15,9 +16,21 @@ type Users struct {
 //传入Users，从DB中构建出来...
 func (u *Users) BuildFromDb(db1 *sql.DB, db2 *sql.DB) error {
 	var userid int
-	var starttime int64
+	var st, st1 int64
 
-	qs := fmt.Sprintf(`select userid,unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) from wanbu_health_user_walking_recipes where starttime !=0`)
+	/*
+			 select userid,(CASE
+			    WHEN  starttime > unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 31 DAY)) && starttime <unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 0 DAY)) then unix_timestamp(FROM_UNIXTIME(starttime, '%Y-%m-%d'))
+		        ELSE unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 31 DAY))
+		    END) as days
+		     from wanbu_health_user_walking_recipes where starttime !=0
+	*/
+
+	qs := fmt.Sprintf(`select userid,(CASE
+			    WHEN  starttime > unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) && starttime <unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 0 DAY)) then unix_timestamp(FROM_UNIXTIME(starttime, '%%Y-%%m-%%d'))
+		        ELSE unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 30 DAY))
+		    END) as st, unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 30 DAY))
+		     from wanbu_health_user_walking_recipes where starttime !=0`)
 
 	fmt.Println(qs)
 
@@ -30,12 +43,12 @@ func (u *Users) BuildFromDb(db1 *sql.DB, db2 *sql.DB) error {
 
 		var user Userinfo
 
-		err := rows.Scan(&userid, &starttime)
+		err := rows.Scan(&userid, &st, &st1)
 		if err != nil {
 			return errors.New("数据库错误")
 		}
 
-		tmp, err := user.New(userid, starttime)
+		tmp, err := user.New(userid, st, st1)
 		if err != nil {
 			return err
 		}
@@ -95,9 +108,9 @@ func (u *Users) SetFinishStatus(ui *Userinfo, db *sql.DB) error {
 }
 
 //Build User，如果没有，Build出来一个，加进这个slice里
-func (u *Users) AppendNew(userid int, starttime int64) (int, error) {
+func (u *Users) AppendNew(userid int, st, st1 int64) (int, error) {
 	var tmp Userinfo
-	ptmp, err := tmp.New(userid, starttime)
+	ptmp, err := tmp.New(userid, st, st1)
 	if err != nil {
 		return 0, err
 	}
@@ -117,7 +130,7 @@ func (u *Users) ModifyUsersStarttime(ch chan DownloadMsg) {
 		index := u.FindByUserid(userid)
 		//无当前用户
 		if index == -1 {
-			index, _ = u.AppendNew(userid, starttime)
+			index, _ = u.AppendNew(userid, starttime, starttime)
 		}
 
 		//时间无变化，继续等待
@@ -147,4 +160,13 @@ func (u *Users) FindByUserid(userid int) int {
 		continue
 	}
 	return -1
+}
+
+//返回当前Users详情 ..
+func (u *Users) ToString() {
+
+	for _, v := range users.Sl {
+		fmt.Printf("userid:[%d],starttime:[%s],finishcount:[%d]\n", v.Userid, time.Unix(v.Starttime, 0).Format("2006-01-02"), v.Chufang.Count())
+		fmt.Printf(v.Chufang.ToString())
+	}
 }

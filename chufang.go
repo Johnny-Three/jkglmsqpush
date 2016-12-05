@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"sort"
 	"sync"
+	"time"
 )
 
 type Finshday struct {
@@ -21,6 +23,28 @@ func Datecheckvalid(date int64) bool {
 		return true
 	}
 	return false
+}
+
+func (f *Finshday) ToString() string {
+
+	f.lock.RLock()
+	defer f.lock.RUnlock()
+
+	var keys []int
+	for k := range f.statemap {
+		keys = append(keys, int(k))
+	}
+	sort.Ints(keys)
+	var buffer bytes.Buffer
+	buffer.WriteString("{")
+	for i := 0; i < len(keys); i++ {
+
+		t := time.Unix(int64(keys[i]), 0).Format("2006-01-02")
+		s := f.statemap[int64(keys[i])]
+		buffer.WriteString(fmt.Sprintf("[%s,%d]\n", t, s))
+	}
+	buffer.WriteString("}\n")
+	return buffer.String()
 }
 
 //查找处方完成天数
