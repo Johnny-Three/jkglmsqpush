@@ -26,11 +26,8 @@ func (u *Users) BuildFromDb(db1 *sql.DB, db2 *sql.DB) error {
 		     from wanbu_health_user_walking_recipes where starttime !=0
 	*/
 
-	qs := fmt.Sprintf(`select userid,(CASE
-			    WHEN  starttime > unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) && starttime <unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 0 DAY)) then unix_timestamp(FROM_UNIXTIME(starttime, '%%Y-%%m-%%d'))
-		        ELSE unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 30 DAY))
-		    END) as st, unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 30 DAY))
-		     from wanbu_health_user_walking_recipes where starttime !=0`)
+	qs := fmt.Sprintf(`select userid,unix_timestamp(from_unixtime(starttime,'%%Y-%%m-%%d')) as st,	(CASE  WHEN  starttime > unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) && starttime <unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 0 DAY)) then unix_timestamp(FROM_UNIXTIME(starttime, '%%Y-%%m-%%d')) ELSE unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) END) as st1
+	from wanbu_health_user_walking_recipes where starttime !=0`)
 
 	fmt.Println(qs)
 

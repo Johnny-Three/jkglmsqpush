@@ -12,7 +12,7 @@ import (
 
 var users Users
 var version = "1.0.0PR2"
-var filepath = "config.toml"
+var filepath = "../etc/config.toml"
 var modulename = "jkglmsqpush"
 
 func main() {

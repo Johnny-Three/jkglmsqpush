@@ -46,7 +46,7 @@ func TaskWenjuan1(users *Users, c *Config) {
 	if len(u) > 0 {
 
 		//推送需要推送的人...写pmlist表...
-		err := PushChufang(u, c)
+		err := PushGuding(u, c)
 		if err != nil {
 			Logger.Critical(err)
 		}
@@ -68,7 +68,8 @@ func TaskWenjuan2(users *Users, c *Config) {
 			Logger.Criticalf("user:[%d],got wrong in TimeAfterStart()", v.Userid)
 		}
 		//每隔多少天去检查一下，如果刚巧是30天
-		if (days-1)%c.Condition2[2] == 0 {
+		fmt.Printf("userid:[%d],days:[%d]\n", v.Userid, days)
+		if days%c.Condition2[2] == 0 {
 			if v.Chufang.Count() > c.Condition2[1] || v.Chufang.Count() < c.Condition2[0] {
 				u = append(u, v)
 			}
