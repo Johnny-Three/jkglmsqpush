@@ -142,19 +142,16 @@ func (u *Users) ModifyUsersChuFangStatus(ch chan UserWalkdaysStruct) {
 						if v.Chufangtotal == v.Chufangfinish && v.Chufangtotal != 0 {
 							//set finish ..
 							user.Chufang.Set(i, 1)
-							Logger.Debug(user.Chufang.ToString())
-							Logger.Debug(user.Chufang.Count())
 						} else {
-
 							//set no finish ..
 							user.Chufang.Set(i, 0)
-							Logger.Debug(user.Chufang.ToString())
-							Logger.Debug(user.Chufang.Count())
 						}
 
 					}
 				}
 			}
+			Logger.Debug(user.Chufang.ToString())
+			Logger.Debug(user.Chufang.Count())
 		} else {
 			continue
 		}
@@ -178,13 +175,16 @@ func (u *Users) ModifyUsersStarttime(ch chan DownloadMsg) {
 		}
 
 		//时间无变化，继续等待
-		if u.Sl[index-1].Starttime == starttime {
+		if u.Sl[index].Starttime == starttime {
 			continue
 		}
 		//修改下载时间后，重新构建处方完成结构..
 		if err := u.Sl[index].Chufang.Rebuild(starttime); err != nil {
 			Logger.Critical(err.Error())
 		}
+		Logger.Debug("After Modified ...")
+		Logger.Debug(u.Sl[index].Chufang.ToString())
+		Logger.Debug(u.Sl[index].Chufang.Count())
 		u.Sl[index].Starttime = starttime
 	}
 }

@@ -10,7 +10,7 @@ import (
 )
 
 var users Users
-var version = "1.0.0PR3"
+var version = "1.0.0PR4"
 var filepath = "../etc/config.toml"
 var modulename = "jkglmsqpush"
 
@@ -36,7 +36,6 @@ func main() {
 		//启动处理更改下载时间事件..
 		go users.ModifyUsersStarttime(MsgChan)
 		go users.ModifyUsersChuFangStatus(UserWalkDataChan)
-		users.ToString()
 
 		//Consumer运行，消费下载消息..
 		go func() {

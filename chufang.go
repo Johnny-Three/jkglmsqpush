@@ -130,7 +130,7 @@ func (f *Finshday) Rebuild(date int64) error {
 
 		return nil
 	}
-	fmt.Printf("downloadtime[%d],endtime[%d]", date, f.endtime)
+	fmt.Printf("downloadtime[%d],endtime[%d]\n", date, f.endtime)
 	//如果下载时间迟后，重做map
 	if date > f.endtime {
 		f.statemap = make(map[int64]int8)
@@ -158,6 +158,7 @@ func (f *Finshday) Rebuild(date int64) error {
 		tmpmap[f.endtime+i*86400] = 0
 	}
 	f.statemap = tmpmap
+	f.starttime = date
 	return nil
 }
 
