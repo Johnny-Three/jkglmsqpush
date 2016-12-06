@@ -6,12 +6,11 @@ import (
 	"strings"
 	"time"
 
-	nsq "github.com/bitly/go-nsq"
 	gocron "github.com/jasonlvhit/gocron"
 )
 
 var users Users
-var version = "1.0.0PR2"
+var version = "1.0.0PR3"
 var filepath = "../etc/config.toml"
 var modulename = "jkglmsqpush"
 
@@ -33,25 +32,41 @@ func main() {
 		if err := users.BuildFromDb(c.Db1, c.Db2); err != nil {
 			Logger.Critical(err)
 		}
+
 		//启动处理更改下载时间事件..
 		go users.ModifyUsersStarttime(MsgChan)
-
+		go users.ModifyUsersChuFangStatus(UserWalkDataChan)
 		users.ToString()
 
-		//对接NSQ，消费上传消息
-		consumer, err := NewConsummer(c.Nsqtopic, modulename)
-		if err != nil {
-			panic(err)
-		}
+		//Consumer运行，消费下载消息..
+		go func() {
 
-		//Consumer运行，消费消息..
-		go func(consumer *nsq.Consumer) {
-
-			err := ConsumerRun(consumer, c.Nsqtopic, c.Nsqaddress)
+			//对接NSQ，消费下载消息
+			consumer, err := NewConsummer(c.Nsqtopic1, modulename)
 			if err != nil {
 				panic(err)
 			}
-		}(consumer)
+
+			err = ConsumerRun(consumer, c.Nsqtopic1, c.Nsqaddress)
+			if err != nil {
+				panic(err)
+			}
+		}()
+
+		//Consumer运行，消费上传消息..
+		go func() {
+
+			//对接NSQ，消费上传消息
+			consumer, err := NewConsummer(c.Nsqtopic2, modulename)
+			if err != nil {
+				panic(err)
+			}
+
+			err = ConsumerRun(consumer, c.Nsqtopic2, c.Nsqaddress)
+			if err != nil {
+				panic(err)
+			}
+		}()
 
 		//debug on 立刻执行
 		if strings.EqualFold(c.Debug, "on") {

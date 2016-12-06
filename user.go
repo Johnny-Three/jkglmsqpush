@@ -12,6 +12,30 @@ type Userinfo struct {
 	Chufang   *Finshday
 }
 
+func (u *Userinfo) CompareDate(min, max int64) (yes bool, s, e int64) {
+
+	st := u.Chufang.GetStarttime()
+	ed := u.Chufang.GetEndtime()
+
+	if min > ed || max < st {
+		return false, 0, 0
+	}
+
+	if max <= ed {
+		e = max
+	} else {
+		e = ed
+	}
+
+	if min <= st {
+		s = st
+	} else {
+		s = min
+	}
+
+	return true, s, e
+}
+
 //传入参数，userid
 func (u *Userinfo) New(uid int, st, st1 int64) (ui *Userinfo, err error) {
 

@@ -19,16 +19,23 @@ func (h *Handle) HandleMsg(m *nsq.Message) error {
 	return nil
 }
 
-func (h *Handle) Process() {
+func (h *Handle) Process(i int) {
 
 	h.stop = false
 	for {
 		select {
 		case m := <-h.msgchan:
-			//fmt.Println(string(m.Body))
-			err := Decode(string(m.Body))
-			if err != nil {
-				Logger.Critical(err)
+			var err error
+			if i == 0 {
+				err = DecodeMT(string(m.Body))
+				if err != nil {
+					Logger.Critical(err)
+				}
+			} else if i == 1 {
+				err = DecodeMS(string(m.Body))
+				if err != nil {
+					Logger.Critical(err)
+				}
 			}
 		case <-time.After(time.Hour):
 			if h.stop {
@@ -69,15 +76,29 @@ func ConsumerRun(consumer *nsq.Consumer, topic, address string) error {
 	if consumer == nil {
 		return errors.New("consumer尚未初始化 ")
 	}
+	if topic == "user_recipe_download" {
 
-	h = new(Handle)
-	consumer.AddHandler(nsq.HandlerFunc(h.HandleMsg))
-	h.msgchan = make(chan *nsq.Message, 1024)
-	err = consumer.ConnectToNSQLookupd(address)
-	if err != nil {
-		return err
+		h := new(Handle)
+		consumer.AddHandler(nsq.HandlerFunc(h.HandleMsg))
+		h.msgchan = make(chan *nsq.Message, 1024)
+		err = consumer.ConnectToNSQLookupd(address)
+		if err != nil {
+			return err
+		}
+		h.Process(0)
 	}
-	h.Process()
+
+	if topic == "base_data_upload" {
+
+		h := new(Handle)
+		consumer.AddHandler(nsq.HandlerFunc(h.HandleMsg))
+		h.msgchan = make(chan *nsq.Message, 1024)
+		err = consumer.ConnectToNSQLookupd(address)
+		if err != nil {
+			return err
+		}
+		h.Process(1)
+	}
 
 	return nil
 }

@@ -13,18 +13,20 @@ type Users struct {
 	Sl []*Userinfo
 }
 
+func (u *Users) GetUser(uid int) *Userinfo {
+
+	for _, v := range u.Sl {
+		if v.Userid == uid {
+			return v
+		}
+	}
+	return nil
+}
+
 //传入Users，从DB中构建出来...
 func (u *Users) BuildFromDb(db1 *sql.DB, db2 *sql.DB) error {
 	var userid int
 	var st, st1 int64
-
-	/*
-			 select userid,(CASE
-			    WHEN  starttime > unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 31 DAY)) && starttime <unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 0 DAY)) then unix_timestamp(FROM_UNIXTIME(starttime, '%Y-%m-%d'))
-		        ELSE unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 31 DAY))
-		    END) as days
-		     from wanbu_health_user_walking_recipes where starttime !=0
-	*/
 
 	qs := fmt.Sprintf(`select userid,unix_timestamp(from_unixtime(starttime,'%%Y-%%m-%%d')) as st,	(CASE  WHEN  starttime > unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) && starttime <unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 0 DAY)) then unix_timestamp(FROM_UNIXTIME(starttime, '%%Y-%%m-%%d')) ELSE unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) END) as st1
 	from wanbu_health_user_walking_recipes where starttime !=0`)
@@ -115,6 +117,51 @@ func (u *Users) AppendNew(userid int, st, st1 int64) (int, error) {
 	return len(u.Sl), nil
 }
 
+//消费NSQ上传消息，更改某个user的处方完成状态
+func (u *Users) ModifyUsersChuFangStatus(ch chan UserWalkdaysStruct) {
+
+	for {
+		msg := <-ch
+		//用户上传消息，需要看看是否有用户在内存里，在内存里再看时间范围是否符合，计算符合天数的完成任务情况
+		//不在内存中则继续循环
+		user := u.GetUser(msg.Uid)
+		if user == nil {
+			continue
+		}
+		mindate := msg.Walkdays[0].WalkDate
+		maxdate := msg.Walkdays[len(msg.Walkdays)-1].WalkDate
+		yes, s, e := user.CompareDate(mindate, maxdate)
+		if yes {
+			Logger.Debugf("userid:[%d],starttime:[%d],endtime:[%d]", msg.Uid, s, e)
+			//循环设置
+			for i := s; i <= e; i += 86400 {
+				//解析符合的消息，查看任务完成状态
+				for _, v := range msg.Walkdays {
+					if v.WalkDate == i {
+
+						if v.Chufangtotal == v.Chufangfinish && v.Chufangtotal != 0 {
+							//set finish ..
+							user.Chufang.Set(i, 1)
+							Logger.Debug(user.Chufang.ToString())
+							Logger.Debug(user.Chufang.Count())
+						} else {
+
+							//set no finish ..
+							user.Chufang.Set(i, 0)
+							Logger.Debug(user.Chufang.ToString())
+							Logger.Debug(user.Chufang.Count())
+						}
+
+					}
+				}
+			}
+		} else {
+			continue
+		}
+
+	}
+}
+
 //修改某个user的下载处方时间，如果没有此用户，需要在内存中新建这个用户
 func (u *Users) ModifyUsersStarttime(ch chan DownloadMsg) {
 
@@ -163,7 +210,7 @@ func (u *Users) FindByUserid(userid int) int {
 func (u *Users) ToString() {
 
 	for _, v := range users.Sl {
-		fmt.Printf("userid:[%d],starttime:[%s],finishcount:[%d]\n", v.Userid, time.Unix(v.Starttime, 0).Format("2006-01-02"), v.Chufang.Count())
-		fmt.Printf(v.Chufang.ToString())
+		Logger.Debugf("userid:[%d],starttime:[%s],finishcount:[%d]\n", v.Userid, time.Unix(v.Starttime, 0).Format("2006-01-02"), v.Chufang.Count())
+		Logger.Debugf(v.Chufang.ToString())
 	}
 }

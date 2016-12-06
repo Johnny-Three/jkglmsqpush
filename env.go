@@ -17,7 +17,8 @@ type ConfigFile struct {
 	Wanbudatabase string
 	Hmpdatabase   string
 	Nsqaddress    string
-	Nsqtopic      string
+	Nsqtopic1     string
+	Nsqtopic2     string
 	Sendtime      string
 	Message       []string
 	Debug         string
@@ -31,7 +32,8 @@ type Config struct {
 	Condition1 []int
 	Condition2 []int
 	Nsqaddress string
-	Nsqtopic   string
+	Nsqtopic1  string
+	Nsqtopic2  string
 	Sendtime   string
 	Message    []string
 	Debug      string
@@ -75,7 +77,8 @@ func EnvBuild(filepath string) Config {
 	conf.Sendtime = tmp.Sendtime
 	conf.Message = tmp.Message
 	conf.Nsqaddress = tmp.Nsqaddress
-	conf.Nsqtopic = tmp.Nsqtopic
+	conf.Nsqtopic1 = tmp.Nsqtopic1
+	conf.Nsqtopic2 = tmp.Nsqtopic2
 	conf.Debug = tmp.Debug
 	conf.Condition1 = tmp.Wenjuan1
 	if len(conf.Condition1) != 4 {

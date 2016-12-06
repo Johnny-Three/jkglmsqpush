@@ -34,12 +34,12 @@ func TaskWenjuan1(users *Users, c *Config) {
 		}
 
 		switch {
-		case days == c.Condition1[0]:
+		case days == c.Condition1[0]-1:
 			u = append(u, v)
-		case days == c.Condition1[1]:
+		case days == c.Condition1[1]-1:
 			u = append(u, v)
-		//每隔60天去检查一次..
-		case days%c.Condition1[2] == 0:
+		//超76天后，每隔60天去检查一次..
+		case (days+1-c.Condition1[2])%c.Condition1[3] == 0:
 			u = append(u, v)
 		}
 	}
@@ -77,7 +77,6 @@ func TaskWenjuan2(users *Users, c *Config) {
 	}
 	if len(u) > 0 {
 
-		fmt.Println("len u is ===== ", len(u))
 		//推送需要推送的人...写pmlist表...
 		err := PushChufang(u, c)
 		if err != nil {

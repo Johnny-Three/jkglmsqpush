@@ -36,14 +36,13 @@ func (f *Finshday) ToString() string {
 	}
 	sort.Ints(keys)
 	var buffer bytes.Buffer
-	buffer.WriteString("{")
+	buffer.WriteString("\n")
 	for i := 0; i < len(keys); i++ {
 
 		t := time.Unix(int64(keys[i]), 0).Format("2006-01-02")
 		s := f.statemap[int64(keys[i])]
-		buffer.WriteString(fmt.Sprintf("[%s,%d]\n", t, s))
+		buffer.WriteString(fmt.Sprintf("[%s,%d,%d]\n", t, keys[i], s))
 	}
-	buffer.WriteString("}\n")
 	return buffer.String()
 }
 
