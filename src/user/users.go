@@ -63,12 +63,14 @@ func (u *Users) BuildFromDb(wg *sync.WaitGroup, db1 *sql.DB, db2 *sql.DB) error 
 				Logger.Criticalf("user:[%d] set init %s", userid, err.Error())
 				return
 			}
-
-			if err := u.SetFinishStatus(tmp, db2); err != nil {
-				wg.Done()
-				Logger.Criticalf("user:[%d] set init %s", userid, err.Error())
-				return
-			}
+			//todo ..
+			/*
+				if err := u.SetFinishStatus(tmp, db2); err != nil {
+					wg.Done()
+					Logger.Criticalf("user:[%d] set init %s", userid, err.Error())
+					return
+				}
+			*/
 			lock.Lock()
 			u.Sl = append(u.Sl, tmp)
 			lock.Unlock()
@@ -107,11 +109,11 @@ func (u *Users) SetFinishStatus(ui *Userinfo, db *sql.DB) error {
 	}
 	defer rows.Close()
 	for rows.Next() {
-
 		err := rows.Scan(&walkingtime, &t1, &t2, &t3, &t4, &t5, &t6, &t7, &t8)
 		if err != nil {
 			return errors.New("SetFinishStatus()_数据库错误")
 		}
+
 		var f int8
 		if CheckFinish(t1, t2, t3, t4, t5, t6, t7, t8) {
 			f = 1
@@ -224,10 +226,13 @@ func (u *Users) FindByUserid(userid int) int {
 }
 
 //返回当前Users详情 ..
-func (u *Users) ToString() {
+func (u *Users) ToString(userid int) string {
 
 	for _, v := range u.Sl {
-		Logger.Debugf("userid:[%d],starttime:[%s],finishcount:[%d]", v.Userid, time.Unix(v.Starttime, 0).Format("2006-01-02"), v.Chufang.Count())
-		//Logger.Debugf(v.Chufang.ToString())
+		if v.Userid == userid {
+			tmp := fmt.Sprintf("userid:[%d],starttime:[%s],finishcount:[%d]", v.Userid, time.Unix(v.Starttime, 0).Format("2006-01-02"), v.Chufang.Count())
+			return tmp + v.Chufang.ToString()
+		}
 	}
+	return "没有这个用户"
 }

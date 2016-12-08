@@ -21,6 +21,7 @@ type ConfigFile struct {
 	Nsqtopic2     string
 	Sendtime      string
 	Message       []string
+	Listenport    string
 	Debug         string
 	Wenjuan1      []int
 	Wenjuan2      []int
@@ -36,6 +37,7 @@ type Config struct {
 	Nsqtopic2  string
 	Sendtime   string
 	Message    []string
+	Listenport string
 	Debug      string
 	LogDes     string
 	Err        error
@@ -79,6 +81,7 @@ func EnvBuild(filepath string) Config {
 	conf.Nsqaddress = tmp.Nsqaddress
 	conf.Nsqtopic1 = tmp.Nsqtopic1
 	conf.Nsqtopic2 = tmp.Nsqtopic2
+	conf.Listenport = tmp.Listenport
 	conf.Debug = tmp.Debug
 	conf.Condition1 = tmp.Wenjuan1
 	if len(conf.Condition1) != 4 {
@@ -100,8 +103,8 @@ func EnvBuild(filepath string) Config {
 	db1, err := sql.Open("mysql", tmp.Wanbudatabase)
 	fmt.Println("db1", tmp.Wanbudatabase)
 	//defer db1.Close()
-	db1.SetMaxOpenConns(10)
-	db1.SetMaxIdleConns(5)
+	db1.SetMaxOpenConns(50)
+	db1.SetMaxIdleConns(10)
 	db1.Ping()
 
 	if err != nil {
@@ -115,7 +118,7 @@ func EnvBuild(filepath string) Config {
 	db2, err := sql.Open("mysql", tmp.Hmpdatabase)
 	fmt.Println("db2", tmp.Hmpdatabase)
 	//defer db1.Close()
-	db2.SetMaxOpenConns(100)
+	db2.SetMaxOpenConns(50)
 	db2.SetMaxIdleConns(10)
 	db2.Ping()
 	if err != nil {

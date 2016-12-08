@@ -36,7 +36,6 @@ func (f *Finshday) ToString() string {
 	}
 	sort.Ints(keys)
 	var buffer bytes.Buffer
-	buffer.WriteString("\n")
 	for i := 0; i < len(keys); i++ {
 
 		t := time.Unix(int64(keys[i]), 0).Format("2006-01-02")
@@ -130,7 +129,7 @@ func (f *Finshday) Rebuild(date int64) error {
 
 		return nil
 	}
-	fmt.Printf("downloadtime[%d],endtime[%d]\n", date, f.endtime)
+
 	//如果下载时间迟后，重做map
 	if date > f.endtime {
 		f.statemap = make(map[int64]int8)
@@ -173,7 +172,7 @@ func (f *Finshday) Changeeveryday(date int64) error {
 	}
 
 	if date-f.endtime != 86400 {
-		return errors.New("传入日期有误，需要在原末尾天后补一")
+		return f.Rebuild(date)
 	}
 
 	f.starttime = f.starttime + 86400

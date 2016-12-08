@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"sync"
 	"time"
 	. "wbproject/jkglmsgpush/src/business"
 	. "wbproject/jkglmsgpush/src/enviroment"
+	httpserver "wbproject/jkglmsgpush/src/httpserver"
 	. "wbproject/jkglmsgpush/src/nsq"
 	. "wbproject/jkglmsgpush/src/user"
 
@@ -15,7 +17,7 @@ import (
 )
 
 var users Users
-var version = "1.0.0PR5"
+var version = "1.0.0PR6"
 var filepath = "../etc/config.toml"
 var modulename = "jkglmsqpush"
 
@@ -35,7 +37,7 @@ func main() {
 		fmt.Println("运行环境初始化完毕...")
 
 		start := time.Now()
-		fmt.Printf("begin time is %s\n", start.Format("2006-01-02 15:04:05"))
+		Logger.Infof("begin time is %s\n", start.Format("2006-01-02 15:04:05"))
 		var wg sync.WaitGroup
 		//从HMP库中构建users..
 		if err := users.BuildFromDb(&wg, c.Db1, c.Db2); err != nil {
@@ -43,11 +45,23 @@ func main() {
 		}
 		wg.Wait()
 		elapsed := time.Since(start)
-		fmt.Println("Load db person query total time:", elapsed)
+		Logger.Infof("Load db person query total time:", elapsed)
 
+		fmt.Println("你好，用户的总数是：=====", len(users.Sl))
 		//启动处理更改下载时间事件..
 		go users.ModifyUsersStarttime(MsgChan)
 		go users.ModifyUsersChuFangStatus(UserWalkDataChan)
+
+		go func(users *Users, c *Config) {
+			//启动接口
+			httpserver.StoreUsers(users)
+			router := httpserver.NewRouter()
+			Logger.Info("report service starting...")
+			err := http.ListenAndServe(":"+c.Listenport, router)
+			if err != nil {
+				Logger.Critical("report service failed")
+			}
+		}(&users, &c)
 
 		//Consumer运行，消费下载消息..
 		go func() {
@@ -85,8 +99,9 @@ func main() {
 			TaskWenjuan1(&users, &c)
 			TaskWenjuan2(&users, &c)
 			//休息10S
-			time.Sleep(100 * time.Second)
-
+			for {
+				time.Sleep(1 * time.Second)
+			}
 		} else if strings.EqualFold(c.Debug, "off") {
 
 			//0点1分触发处方完成率滚动任务
