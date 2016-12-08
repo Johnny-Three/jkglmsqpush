@@ -17,7 +17,7 @@ import (
 )
 
 var users Users
-var version = "1.0.0PR6"
+var version = "1.0.0PR7"
 var filepath = "../etc/config.toml"
 var modulename = "jkglmsqpush"
 
@@ -37,7 +37,7 @@ func main() {
 		fmt.Println("运行环境初始化完毕...")
 
 		start := time.Now()
-		Logger.Infof("begin time is %s\n", start.Format("2006-01-02 15:04:05"))
+		Logger.Infof("begin time is %s", start.Format("2006-01-02 15:04:05"))
 		var wg sync.WaitGroup
 		//从HMP库中构建users..
 		if err := users.BuildFromDb(&wg, c.Db1, c.Db2); err != nil {
@@ -45,7 +45,7 @@ func main() {
 		}
 		wg.Wait()
 		elapsed := time.Since(start)
-		Logger.Infof("Load db person query total time:", elapsed)
+		Logger.Info("Load db person query total time:", elapsed)
 
 		fmt.Println("你好，用户的总数是：=====", len(users.Sl))
 		//启动处理更改下载时间事件..

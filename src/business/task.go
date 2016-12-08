@@ -18,7 +18,7 @@ func TaskGundong(users *Users) {
 			//处理每一个用户..
 			ct := GetTimestamp(time.Unix(time.Now().Unix(), 0).Format("2006-01-02"))
 			if err := u.Chufang.Changeeveryday(ct); err != nil {
-				Logger.Critical("userid:[%d],err:%s", u.Userid, err.Error())
+				Logger.Criticalf("userid:[%d],err:%s", u.Userid, err.Error())
 			}
 		}(v)
 	}

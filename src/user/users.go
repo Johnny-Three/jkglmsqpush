@@ -64,13 +64,12 @@ func (u *Users) BuildFromDb(wg *sync.WaitGroup, db1 *sql.DB, db2 *sql.DB) error 
 				return
 			}
 			//todo ..
-			/*
-				if err := u.SetFinishStatus(tmp, db2); err != nil {
-					wg.Done()
-					Logger.Criticalf("user:[%d] set init %s", userid, err.Error())
-					return
-				}
-			*/
+			if err := u.SetFinishStatus(tmp, db2); err != nil {
+				wg.Done()
+				Logger.Criticalf("user:[%d] set init %s", userid, err.Error())
+				return
+			}
+
 			lock.Lock()
 			u.Sl = append(u.Sl, tmp)
 			lock.Unlock()
@@ -102,13 +101,13 @@ func (u *Users) SetFinishStatus(ui *Userinfo, db *sql.DB) error {
 	var walkingtime int64
 	var t1, t2, t3, t4, t5, t6, t7, t8 int8
 	qs := fmt.Sprintf("select walkingtime,task1state,task2state,task3state,task4state,task5state,task6state,task7state,task8state from hmp_walking_tasks_000 where uid = %d and walkingtime >= %d  and walkingtime<= %d ", ui.Userid, ui.Chufang.GetStarttime(), ui.Chufang.GetEndtime())
-
 	rows, err := db.Query(qs)
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
 	for rows.Next() {
+
 		err := rows.Scan(&walkingtime, &t1, &t2, &t3, &t4, &t5, &t6, &t7, &t8)
 		if err != nil {
 			return errors.New("SetFinishStatus()_数据库错误")
@@ -118,6 +117,7 @@ func (u *Users) SetFinishStatus(ui *Userinfo, db *sql.DB) error {
 		if CheckFinish(t1, t2, t3, t4, t5, t6, t7, t8) {
 			f = 1
 		}
+
 		if err := ui.Chufang.Set(walkingtime, f); err != nil {
 			return err
 		}
