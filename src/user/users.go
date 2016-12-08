@@ -64,6 +64,7 @@ func (u *Users) BuildFromDb(wg *sync.WaitGroup, db1 *sql.DB, db2 *sql.DB) error 
 				return
 			}
 			//todo ..
+
 			if err := u.SetFinishStatus(tmp, db2); err != nil {
 				wg.Done()
 				Logger.Criticalf("user:[%d] set init %s", userid, err.Error())
@@ -230,7 +231,7 @@ func (u *Users) ToString(userid int) string {
 
 	for _, v := range u.Sl {
 		if v.Userid == userid {
-			tmp := fmt.Sprintf("userid:[%d],starttime:[%s],finishcount:[%d]", v.Userid, time.Unix(v.Starttime, 0).Format("2006-01-02"), v.Chufang.Count())
+			tmp := fmt.Sprintf("userid:[%d],starttime:[%s],finishcount:[%d]\n", v.Userid, time.Unix(v.Starttime, 0).Format("2006-01-02"), v.Chufang.Count())
 			return tmp + v.Chufang.ToString()
 		}
 	}

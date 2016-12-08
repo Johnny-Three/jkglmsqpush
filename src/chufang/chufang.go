@@ -36,6 +36,7 @@ func (f *Finshday) ToString() string {
 	}
 	sort.Ints(keys)
 	var buffer bytes.Buffer
+	buffer.WriteString("\n")
 	for i := 0; i < len(keys); i++ {
 
 		t := time.Unix(int64(keys[i]), 0).Format("2006-01-02")

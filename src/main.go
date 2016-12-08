@@ -17,7 +17,7 @@ import (
 )
 
 var users Users
-var version = "1.0.0PR7"
+var version = "1.0.0PR8"
 var filepath = "../etc/config.toml"
 var modulename = "jkglmsqpush"
 
@@ -98,20 +98,23 @@ func main() {
 
 			TaskWenjuan1(&users, &c)
 			TaskWenjuan2(&users, &c)
-			//休息10S
-			for {
-				time.Sleep(1 * time.Second)
-			}
+
 		} else if strings.EqualFold(c.Debug, "off") {
 
-			//0点1分触发处方完成率滚动任务
-			gocron.Every(1).Day().At("00:01").Do(TaskGundong, &users)
+			go func() {
+				//0点1分触发处方完成率滚动任务
+				gocron.Every(1).Day().At("00:01").Do(TaskGundong, &users)
 
-			//在指定时间触发固定问卷任务和处方完成率任务
-			gocron.Every(1).Day().At(c.Sendtime).Do(TaskWenjuan1, &users, &c)
-			gocron.Every(1).Day().At(c.Sendtime).Do(TaskWenjuan2, &users, &c)
-			// function Start start all the pending jobs
-			<-gocron.Start()
+				//在指定时间触发固定问卷任务和处方完成率任务
+				gocron.Every(1).Day().At(c.Sendtime).Do(TaskWenjuan1, &users, &c)
+				gocron.Every(1).Day().At(c.Sendtime).Do(TaskWenjuan2, &users, &c)
+				// function Start start all the pending jobs
+				<-gocron.Start()
+			}()
+		}
+
+		for {
+			time.Sleep(100 * time.Second)
 		}
 	}
 }
