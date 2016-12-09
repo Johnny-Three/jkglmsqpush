@@ -39,7 +39,7 @@ func TestFinshday_Count(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   int8
+		want   int
 	}{
 	// TODO: Add test cases.
 	}
@@ -71,7 +71,7 @@ func TestFinshday_Set(t *testing.T) {
 	err = f.Build(1479571200)
 	if err == nil {
 		//格式无错误，查看是否==30
-		t.Logf("Finshday.Build() length = %v,want length = %v", len(f.statemap), 30)
+		t.Logf("Finshday.Build() length = %v,want length = %v", len(f.statemap), 31)
 	} else {
 		t.Errorf("Finshday.Build() error = %v", err)
 	}
@@ -203,6 +203,7 @@ func TestFinshday_Rebuild(t *testing.T) {
 	for k := range f.statemap {
 		keys = append(keys, int(k))
 	}
+
 	sort.Ints(keys)
 	// To perform the opertion you want
 	for _, k := range keys {
@@ -224,11 +225,12 @@ func TestFinshday_Changeeveryday(t *testing.T) {
 	//1479571200  - 11.20
 	//1479657600  - 11.21
 	//1481644800  - 12.14
-	_ = f.Build(1477929600)
+	_ = f.Build(1478620800)
 	_ = f.Set(1479484800, 1)
 	_ = f.Set(1479571200, 1)
 	_ = f.Set(1479657600, 1)
 	_ = f.Set(1481644800, 1)
+	_ = f.Set(1481212800, 1)
 
 	var keys []int
 	for k := range f.statemap {
@@ -242,9 +244,11 @@ func TestFinshday_Changeeveryday(t *testing.T) {
 	}
 	t.Logf("endtime = %v,%v", f.endtime, time.Unix(f.endtime, 0).Format("2006-01-02 15:04:05 PM"))
 
-	err = f.Changeeveryday(1482076800)
+	//20161209
+	err = f.Changeeveryday(1481299200)
+
 	if err == nil {
-		t.Logf("Finshday.Changeeveryday() length = %v,want length = %v", len(f.statemap), 30)
+		t.Logf("Finshday.Changeeveryday() length = %v,want length = %v", len(f.statemap), 31)
 	} else {
 		t.Errorf("Finshday.Changeeveryday() error = %v", err)
 	}

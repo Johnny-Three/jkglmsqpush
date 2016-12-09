@@ -13,13 +13,13 @@ import (
 	. "wbproject/jkglmsgpush/src/nsq"
 	. "wbproject/jkglmsgpush/src/user"
 
-	gocron "github.com/jasonlvhit/gocron"
+	"github.com/jasonlvhit/gocron"
 )
 
 var users Users
-var version = "1.0.0PR8"
+var version = "1.0.0PR9"
 var filepath = "../etc/config.toml"
-var modulename = "jkglmsqpush"
+var modulename = "jkglmsgpush"
 
 func main() {
 
@@ -64,6 +64,7 @@ func main() {
 		}(&users, &c)
 
 		//Consumer运行，消费下载消息..
+
 		go func() {
 
 			//对接NSQ，消费下载消息
@@ -91,6 +92,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
+
 		}()
 
 		//debug on 立刻执行

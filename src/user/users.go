@@ -64,12 +64,13 @@ func (u *Users) BuildFromDb(wg *sync.WaitGroup, db1 *sql.DB, db2 *sql.DB) error 
 				return
 			}
 			//todo ..
-
-			if err := u.SetFinishStatus(tmp, db2); err != nil {
-				wg.Done()
-				Logger.Criticalf("user:[%d] set init %s", userid, err.Error())
-				return
-			}
+			/*
+				if err := u.SetFinishStatus(tmp, db2); err != nil {
+					wg.Done()
+					Logger.Criticalf("user:[%d] set init %s", userid, err.Error())
+					return
+				}
+			*/
 
 			lock.Lock()
 			u.Sl = append(u.Sl, tmp)

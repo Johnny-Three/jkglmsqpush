@@ -7,11 +7,12 @@ import (
 	"sort"
 	"sync"
 	"time"
+	. "wbproject/jkglmsgpush/src/util"
 )
 
 type Finshday struct {
 	starttime int64 //处方下载日期
-	endtime   int64 //处方下载日期 + 30 天
+	endtime   int64 //处方下载日期 + 31 天
 	lock      sync.RWMutex
 	statemap  map[int64]int8
 }
@@ -52,10 +53,15 @@ func (f *Finshday) Count() int {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
 
+	ct := GetTimestamp(time.Unix(time.Now().Unix(), 0).Format("2006-01-02"))
+	//排除当天..
 	num := 0
-	for _, value := range f.statemap {
+	for k, v := range f.statemap {
 
-		if value == 1 {
+		if k == ct {
+			continue
+		}
+		if v == 1 {
 			num++
 		}
 	}
@@ -103,7 +109,7 @@ func (f *Finshday) Build(date int64) error {
 	}
 	f.starttime, f.endtime = date, date
 	f.statemap = make(map[int64]int8)
-	for i := 0; i < 30; i++ {
+	for i := 0; i < 31; i++ {
 		f.endtime = f.starttime + int64(i*86400)
 		f.statemap[f.endtime] = 0
 	}
@@ -121,7 +127,7 @@ func (f *Finshday) Rebuild(date int64) error {
 	}
 
 	//如果尚未build，则build之
-	if len(f.statemap) != 30 {
+	if len(f.statemap) != 31 {
 		return f.Build(date)
 	}
 
@@ -134,7 +140,7 @@ func (f *Finshday) Rebuild(date int64) error {
 	//如果下载时间迟后，重做map
 	if date > f.endtime {
 		f.statemap = make(map[int64]int8)
-		for i := 0; i < 30; i++ {
+		for i := 0; i < 31; i++ {
 			f.endtime = f.starttime + int64(i*86400)
 			f.statemap[f.endtime] = 0
 		}
@@ -168,16 +174,16 @@ func (f *Finshday) Changeeveryday(date int64) error {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 	//如果当天0点的time比starttime要小，说明尚无需开始计算
-	if date < f.starttime {
+	if date-f.endtime <= 0 {
 		return nil
 	}
 
-	if date-f.endtime != 86400 {
-		return f.Rebuild(date)
+	if i := (date - f.endtime) % 86400; i != 0 {
+		return fmt.Errorf("date:[%d]格式错误", date)
 	}
 
-	f.starttime = f.starttime + 86400
-	f.endtime = f.endtime + 86400
+	i := (date - f.endtime) / 86400
+
 	tmpmap := make(map[int64]int8)
 	// To store the keys in slice in sorted order
 	var keys []int
@@ -186,12 +192,17 @@ func (f *Finshday) Changeeveryday(date int64) error {
 	}
 	sort.Ints(keys)
 	// To perform the opertion you want
-	for _, k := range keys[1:] {
+	for _, k := range keys[i:] {
 		tmpmap[int64(k)] = f.statemap[int64(k)]
 	}
-	//当天时间写入map
-	tmpmap[f.endtime] = 0
-	f.statemap = tmpmap
 
+	//修正开始和结束时间
+	f.starttime = f.starttime + i*86400
+	var c int64
+	for c = 1; c <= i; c++ {
+		tmpmap[f.endtime+c*86400] = 0
+	}
+
+	f.statemap = tmpmap
 	return nil
 }

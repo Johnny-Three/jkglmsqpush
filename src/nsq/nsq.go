@@ -26,6 +26,7 @@ func (h *Handle) Process(i int) {
 	for {
 		select {
 		case m := <-h.msgchan:
+
 			var err error
 			if i == 0 {
 				err = DecodeMT(string(m.Body))
@@ -38,6 +39,7 @@ func (h *Handle) Process(i int) {
 					Logger.Critical(err)
 				}
 			}
+
 		case <-time.After(time.Hour):
 			if h.stop {
 				close(h.msgchan)
@@ -51,20 +53,16 @@ func (h *Handle) Stop() {
 	h.stop = true
 }
 
-var consumer *nsq.Consumer
-var err error
-var h *Handle
-var config *nsq.Config
-
 func NewConsummer(topic, channel string) (*nsq.Consumer, error) {
 
-	config = nsq.NewConfig()
+	var consumer *nsq.Consumer
+	config := nsq.NewConfig()
 	//心跳间隔时间 3s
 	config.HeartbeatInterval = 3 * time.Second
 	//3分钟去发现一次，发现topic为指定的nsqd
 	config.LookupdPollInterval = 3 * time.Minute
 
-	consumer, err = nsq.NewConsumer(topic, channel, config)
+	consumer, err := nsq.NewConsumer(topic, channel, config)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +80,7 @@ func ConsumerRun(consumer *nsq.Consumer, topic, address string) error {
 		h := new(Handle)
 		consumer.AddHandler(nsq.HandlerFunc(h.HandleMsg))
 		h.msgchan = make(chan *nsq.Message, 1024)
-		err = consumer.ConnectToNSQLookupd(address)
+		err := consumer.ConnectToNSQLookupd(address)
 		if err != nil {
 			return err
 		}
@@ -94,7 +92,7 @@ func ConsumerRun(consumer *nsq.Consumer, topic, address string) error {
 		h := new(Handle)
 		consumer.AddHandler(nsq.HandlerFunc(h.HandleMsg))
 		h.msgchan = make(chan *nsq.Message, 1024)
-		err = consumer.ConnectToNSQLookupd(address)
+		err := consumer.ConnectToNSQLookupd(address)
 		if err != nil {
 			return err
 		}
