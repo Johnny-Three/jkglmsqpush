@@ -244,7 +244,7 @@ func TestFinshday_Changeeveryday(t *testing.T) {
 	}
 	t.Logf("endtime = %v,%v", f.endtime, time.Unix(f.endtime, 0).Format("2006-01-02 15:04:05 PM"))
 
-	//20161209
+	//20161210
 	err = f.Changeeveryday(1481299200)
 
 	if err == nil {
@@ -265,6 +265,79 @@ func TestFinshday_Changeeveryday(t *testing.T) {
 	}
 
 	t.Logf("count=%v", f.Count())
+	t.Logf("=======================")
+
+	//20161211
+	t.Logf("before 20161211 = %v,%v", f.starttime, time.Unix(f.starttime, 0).Format("2006-01-02 15:04:05 PM"))
+	err = f.Changeeveryday(1481385600)
+	t.Logf("after 20161211 = %v,%v", f.starttime, time.Unix(f.starttime, 0).Format("2006-01-02 15:04:05 PM"))
+	if err == nil {
+		t.Logf("Finshday.Changeeveryday() length = %v,want length = %v", len(f.statemap), 31)
+	} else {
+		t.Errorf("Finshday.Changeeveryday() error = %v", err)
+	}
+
+	keys = []int{}
+	for k := range f.statemap {
+		keys = append(keys, int(k))
+	}
+	sort.Ints(keys)
+	// To perform the opertion you want
+	for _, k := range keys {
+		ts := time.Unix(int64(k), 0).Format("2006-01-02 15:04:05 PM")
+		t.Logf("[%v,%v]", ts, f.statemap[int64(k)])
+	}
+
+	t.Logf("count=%v", f.Count())
+	t.Logf("=======================")
+
+	//20161212
+	t.Logf("before 20161212 = %v,%v", f.starttime, time.Unix(f.starttime, 0).Format("2006-01-02 15:04:05 PM"))
+	err = f.Changeeveryday(1481472000)
+	t.Logf("after 20161212 = %v,%v", f.starttime, time.Unix(f.starttime, 0).Format("2006-01-02 15:04:05 PM"))
+	if err == nil {
+		t.Logf("Finshday.Changeeveryday() length = %v,want length = %v", len(f.statemap), 31)
+	} else {
+		t.Errorf("Finshday.Changeeveryday() error = %v", err)
+	}
+
+	keys = []int{}
+	for k := range f.statemap {
+		keys = append(keys, int(k))
+	}
+	sort.Ints(keys)
+	// To perform the opertion you want
+	for _, k := range keys {
+		ts := time.Unix(int64(k), 0).Format("2006-01-02 15:04:05 PM")
+		t.Logf("[%v,%v]", ts, f.statemap[int64(k)])
+	}
+
+	t.Logf("count=%v", f.Count())
+	t.Logf("=======================")
+
+	//20161213
+	t.Logf("before 20161213 = %v,%v", f.endtime, time.Unix(f.endtime, 0).Format("2006-01-02 15:04:05 PM"))
+	err = f.Changeeveryday(1481558400)
+	t.Logf("before 20161213 = %v,%v", f.endtime, time.Unix(f.endtime, 0).Format("2006-01-02 15:04:05 PM"))
+	if err == nil {
+		t.Logf("Finshday.Changeeveryday() length = %v,want length = %v", len(f.statemap), 31)
+	} else {
+		t.Errorf("Finshday.Changeeveryday() error = %v", err)
+	}
+
+	keys = []int{}
+	for k := range f.statemap {
+		keys = append(keys, int(k))
+	}
+	sort.Ints(keys)
+	// To perform the opertion you want
+	for _, k := range keys {
+		ts := time.Unix(int64(k), 0).Format("2006-01-02 15:04:05 PM")
+		t.Logf("[%v,%v]", ts, f.statemap[int64(k)])
+	}
+
+	t.Logf("count=%v", f.Count())
+	t.Logf("=======================")
 }
 
 func Test_main(t *testing.T) {

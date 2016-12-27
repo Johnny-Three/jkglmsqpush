@@ -202,7 +202,7 @@ func (f *Finshday) Changeeveryday(date int64) error {
 	for c = 1; c <= i; c++ {
 		tmpmap[f.endtime+c*86400] = 0
 	}
-
+	f.endtime = date
 	f.statemap = tmpmap
 	return nil
 }

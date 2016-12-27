@@ -135,7 +135,7 @@ func (u *Users) AppendNew(userid int, st, st1 int64) (int, error) {
 		return 0, err
 	}
 	u.Sl = append(u.Sl, ptmp)
-	return len(u.Sl), nil
+	return len(u.Sl) - 1, nil
 }
 
 //消费NSQ上传消息，更改某个user的处方完成状态
@@ -194,7 +194,6 @@ func (u *Users) ModifyUsersStarttime(ch chan DownloadMsg) {
 		if index == -1 {
 			index, _ = u.AppendNew(userid, starttime, starttime)
 		}
-
 		//时间无变化，继续等待
 		if u.Sl[index].Starttime == starttime {
 			continue
