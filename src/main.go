@@ -17,7 +17,7 @@ import (
 )
 
 var users Users
-var version = "1.0.0PR10"
+var version = "1.0.0PR12"
 var filepath = "../etc/config.toml"
 var modulename = "jkglmsgpush"
 
@@ -40,7 +40,7 @@ func main() {
 		Logger.Infof("begin time is %s", start.Format("2006-01-02 15:04:05"))
 		var wg sync.WaitGroup
 		//从HMP库中构建users..
-		if err := users.BuildFromDb(&wg, c.Db1, c.Db2); err != nil {
+		if err := users.BuildFromDb(&wg, &c); err != nil {
 			Logger.Critical(err)
 		}
 		wg.Wait()

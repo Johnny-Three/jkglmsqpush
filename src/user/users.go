@@ -30,16 +30,16 @@ func (u *Users) GetUser(uid int) *Userinfo {
 }
 
 //传入Users，从DB中构建出来...
-func (u *Users) BuildFromDb(wg *sync.WaitGroup, db1 *sql.DB, db2 *sql.DB) error {
+func (u *Users) BuildFromDb(wg *sync.WaitGroup, c *Config) error {
 	var userid int
 	var st, st1 int64
 
 	qs := fmt.Sprintf(`select userid,unix_timestamp(from_unixtime(starttime,'%%Y-%%m-%%d')) as st,	(CASE  WHEN  starttime > unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) && starttime <unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 0 DAY)) then unix_timestamp(FROM_UNIXTIME(starttime, '%%Y-%%m-%%d')) ELSE unix_timestamp(DATE_SUB(CURDATE(), INTERVAL 30 DAY)) END) as st1
-	from wanbu_health_user_walking_recipes where starttime !=0`)
+	from wanbu_health_user_walking_recipes where starttime >= unix_timestamp(%s)`, c.Starttime)
 
 	fmt.Println(qs)
 
-	rows, err := db1.Query(qs)
+	rows, err := c.Db1.Query(qs)
 	if err != nil {
 		return err
 	}
@@ -64,13 +64,11 @@ func (u *Users) BuildFromDb(wg *sync.WaitGroup, db1 *sql.DB, db2 *sql.DB) error 
 				return
 			}
 			//todo ..
-			/*
-				if err := u.SetFinishStatus(tmp, db2); err != nil {
-					wg.Done()
-					Logger.Criticalf("user:[%d] set init %s", userid, err.Error())
-					return
-				}
-			*/
+			if err := u.SetFinishStatus(tmp, c.Db2); err != nil {
+				wg.Done()
+				Logger.Criticalf("user:[%d] set init %s", userid, err.Error())
+				return
+			}
 
 			lock.Lock()
 			u.Sl = append(u.Sl, tmp)

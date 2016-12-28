@@ -41,6 +41,8 @@ func TaskWenjuan1(users *Users, c *Config) {
 			u = append(u, v)
 		case days == c.Condition1[1]-1:
 			u = append(u, v)
+		case days == c.Condition1[2]-1:
+			u = append(u, v)
 		//超76天后，每隔60天去检查一次..
 		case days > c.Condition1[2] && (days+1-c.Condition1[2])%c.Condition1[3] == 0:
 			u = append(u, v)

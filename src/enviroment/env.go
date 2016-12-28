@@ -19,6 +19,7 @@ type ConfigFile struct {
 	Nsqaddress    string
 	Nsqtopic1     string
 	Nsqtopic2     string
+	Starttime     string
 	Sendtime      string
 	Message       []string
 	Listenport    string
@@ -35,6 +36,7 @@ type Config struct {
 	Nsqaddress string
 	Nsqtopic1  string
 	Nsqtopic2  string
+	Starttime  string
 	Sendtime   string
 	Message    []string
 	Listenport string
@@ -76,6 +78,7 @@ func EnvBuild(filepath string) Config {
 		conf.Err = err
 		return conf
 	}
+	conf.Starttime = tmp.Starttime
 	conf.Sendtime = tmp.Sendtime
 	conf.Message = tmp.Message
 	conf.Nsqaddress = tmp.Nsqaddress
